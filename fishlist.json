@@ -1,0 +1,11 @@
+[
+    {"name": "rainbow", "weight": 40,  "price": 4, "isFish": true},
+    {"name": "catfish", "weight": 40,  "price": 4, "isFish": true}, 
+    {"name": "shrimp", "weight": 25,  "price": 2, "isFish": true}, 
+    {"name": "blue discus", "weight": 25,  "price": 8, "isFish": true}, 
+    {"name": "glasses", "weight": 15,  "price": 1, "isFish": false},
+    {"name": "clam", "weight": 15,  "price": 1, "isFish": false},
+    {"name": "baba", "weight": 1,  "price": 25, "isFish": false},
+    {"name": "demon", "weight": 1,  "price": 25, "isFish": false}, 
+    {"name": "star", "weight": 15,  "price": 25, "isFish": false}
+]
