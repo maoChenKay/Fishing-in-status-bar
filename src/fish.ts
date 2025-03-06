@@ -42,3 +42,16 @@ export function priceMuti(luck: number = 0, fish: fish): number{
     }
     return price;
 }
+
+export function goodFish(fish: fish, price: number, time: number){
+    if(fish.price > 8){
+        return "Wow!";
+    }
+    if(price > fish.price * 7){
+        return "Good fish!";
+    }
+    if(time < 100){
+        return "Perfect!";
+    }
+    return "";
+}

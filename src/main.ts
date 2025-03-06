@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as fish from './fish';
 import { State } from './state';
+import { start } from 'repl';
 
 let tray: Tray | null = null;
 
@@ -11,9 +12,12 @@ let currentState = State.Sleep;
 let currentIcon = 'fishrod.1';
 
 let dailyLuck = (Math.floor(Math.random() * 200) - 100) / 1000;
+let luckDate = new Date().getDate()
+
+let title = "";
 let money = 0;
 let cateatfish = 0;
-let lastFish = 'No info';
+let lastFish: fish.fish = {"name": "noinfo", "weight": 0,  "price": 0, "isFish": false};
 let lastPrice = 0;
 
 let gamePath = '/Users/alen/Documents/Files/code/Typescript/status bar fishing'
@@ -22,6 +26,8 @@ let fishList: fish.fish[] = [];
 
 let hook: NodeJS.Timeout | null = null;
 let comingCat: NodeJS.Timeout | null = null;
+
+let contextMenu: Menu | null = null;
 
 function readData(): void{
 
@@ -43,29 +49,23 @@ function readData(): void{
   })
 }
 
-
-
-
 app.whenReady().then(() => {
-  const iconPath: string[] = ['fishrod.1', 'fishrod.2', 'warning', 'empty', 'cat', 'rainbow', 'catfish', 'blue discus', 'shrimp', 'glasses', 'clam', 'star', 'demon', 'baba']
   readData()
-
   tray = new Tray(nativeImage.createFromPath(path.join(gamePath, 'assets/cat.png')))
 
   function changeIcon(name: string): void{
     const icon = nativeImage.createFromPath(path.join(gamePath, '/assets', name + '.png'));
-    if(iconPath.includes(name)){
-      if(name == 'cat'){
-        tray?.setImage(icon.resize({width: 18, height: 18}));
-      }
-      else{
-        tray?.setImage(icon.resize({width: 18, height: 18}));
-      }
-      if(name != 'empty'){
-        currentIcon = name;
-      }
+    tray?.setImage(icon.resize({width: 18, height: 18}));
+    if(name != 'empty'){
+      currentIcon = name;
     }
-    else{console.log('Failed to change icon:', name)}
+  }
+
+  function updateLuck(): void{
+    if(new Date().getDate() == luckDate){
+      luckDate = new Date().getDate();
+      dailyLuck = (Math.floor(Math.random() * 200) - 100) / 1000;
+    }
   }
 
   function shineIcon(): void{
@@ -80,15 +80,15 @@ app.whenReady().then(() => {
     setTimeout(hideIcon, 1000)
     setTimeout(showIcon, 1200)
   }
-  function afterShineIcon(): void{
-    function goodIcon(): void{
-      tray?.setTitle('Perfect!')
+  function shineTitle(): void{
+    function hideTitle(): void{
+      tray?.setTitle(title)
     }
-    function showIcon(): void{
+    function showTitle(): void{
       tray?.setTitle('')
     }
-    setTimeout(goodIcon, 1500)
-    setTimeout(showIcon, 3500)
+    setTimeout(hideTitle, 1500)
+    setTimeout(showTitle, 3500)
   }
 
   function stopFishing(): void{
@@ -102,30 +102,44 @@ app.whenReady().then(() => {
     hook = setTimeout(stopFishing, 1000);
   }
 
+  function startFishing(): void{
+    if (comingCat !== null) {
+      clearTimeout(comingCat)
+    }
+    changeIcon('fishrod.2');
+    const waitTime = 3 + Math.random() * 12;
+    hook = setTimeout(hookedFish, waitTime * 500);
+    currentState = State.Fish;
+  }
+
   function catComes(): void{
     currentState = State.Sleep;
-    cateatfish += lastPrice;
-    money -= lastPrice;
-    changeIcon('cat');
+    let ifCat = true
+    if(contextMenu != null){
+      const cat = contextMenu.getMenuItemById("cat")
+      if(cat != null){
+        ifCat = cat.checked
+      }
+    }
+
+    if(ifCat){
+      if(lastFish.isFish){
+        cateatfish += lastPrice;
+        money -= lastPrice;        
+      }
+      changeIcon('cat');      
+    }
   }
   
 
   tray.on('click', async () => {
     clickCount++; 
+    updateLuck()
 
     switch(currentState){
       case State.Sleep:
-        stopFishing();
-        break;
-
       case State.Wait:
-        if (comingCat !== null) {
-          clearTimeout(comingCat)
-        }
-        changeIcon('fishrod.2');
-        const waitTime = 3 + Math.random() * 12;
-        hook = setTimeout(hookedFish, waitTime * 500);
-        currentState = State.Fish;
+        startFishing();
         break;
 
       case State.Fish:
@@ -141,19 +155,18 @@ app.whenReady().then(() => {
           clearTimeout(hook)
         }
 
-        const myFish: fish.fish = fish.randomFish(fishList);
-        lastFish = myFish.name
-        lastPrice = fish.priceMuti(dailyLuck, myFish);
+        lastFish = fish.randomFish(fishList);
+        lastPrice = fish.priceMuti(dailyLuck, lastFish);
         money += lastPrice
-        changeIcon(myFish.name);
-        if(myFish.price > 1){
+        changeIcon(lastFish.name);
+        title = fish.goodFish(lastFish, lastPrice, 300)
+        if(lastFish.price > 1){
           shineIcon();
         }
-        if(myFish.price > 8){
-          afterShineIcon();
-        }
-        currentState = State.Wait;
+        shineTitle()
 
+        currentState = State.Wait;
+        
         comingCat = setTimeout(catComes, 300 * 1000)
 
         break;
@@ -162,7 +175,15 @@ app.whenReady().then(() => {
   });
 
   tray.on('right-click', () => {
-    const contextMenu = Menu.buildFromTemplate([
+    let ifCat = true;
+    if(contextMenu != null){
+      const cat = contextMenu.getMenuItemById("cat")
+      if(cat != null){
+        ifCat = cat.checked
+      }
+    }
+
+    contextMenu = Menu.buildFromTemplate([
       {
         label: `Daily Luck: ${dailyLuck}`,
         enabled: false,
@@ -173,10 +194,12 @@ app.whenReady().then(() => {
       },
       {
         label: `Cat: ${cateatfish}`,
-        enabled: false,
+        type: 'checkbox',
+        id: 'cat',
+        checked: ifCat,
       },
       {
-        label: `Last: ${lastFish} +${lastPrice}`,
+        label: `Last: ${lastFish.name} +${lastPrice}`,
         enabled: false,
       },
       { type: 'separator' },
