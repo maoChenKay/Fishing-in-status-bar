@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as fish from './fish';
 import { State } from './state';
-import { start } from 'repl';
 
 let tray: Tray | null = null;
 
@@ -12,7 +11,9 @@ let currentState = State.Sleep;
 let currentIcon = 'fishrod.1';
 
 let dailyLuck = (Math.floor(Math.random() * 200) - 100) / 1000;
-let luckDate = new Date().getDate()
+let luckDate = new Date().getDate();
+
+let fishTime = 0;
 
 let title = "";
 let money = 0;
@@ -62,7 +63,7 @@ app.whenReady().then(() => {
   }
 
   function updateLuck(): void{
-    if(new Date().getDate() == luckDate){
+    if(new Date().getDate() != luckDate){
       luckDate = new Date().getDate();
       dailyLuck = (Math.floor(Math.random() * 200) - 100) / 1000;
     }
