@@ -21,28 +21,6 @@ export function randomFish(fishs: fish[]): fish{
     return fishs[0]
 }
 
-export function priceMuti(luck: number = 0, fish: fish): number{
-    let price = fish.price;
-    let flag = true;
-    let mutiLine = luck + 0.3;
-    if(fish.isFish == false){
-        return price
-    }
-    if(luck >= 1){
-        console.log('too much luck')
-        return price
-    }
-    while(flag){
-        if(Math.random() < mutiLine){
-            price *= 2;
-        }
-        else{
-            flag = false;
-        }
-    }
-    return price;
-}
-
 export function goodFish(fish: fish, price: number, time: number){
     if(fish.price > 8){
         return "Wow!";
@@ -50,8 +28,21 @@ export function goodFish(fish: fish, price: number, time: number){
     if(price > fish.price * 7){
         return "Good fish!";
     }
-    if(time < 100){
+    if(time < 300){
         return "Perfect!";
     }
     return "";
+}
+
+export function calculateTime(t1: number, t2: number): number{
+    if(t1 >= t2){
+        return t2 - t1 + 1000;
+    }
+    else{
+        return t2 - t1;
+    }
+}
+
+export function rollADice(sevenWeight: number, sixWeight: number): number{
+    return 7;
 }
