@@ -1,19 +1,30 @@
 {
   "name": "status-bar-fishing",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "A stutus bar fishing game",
+  "main": "dist/main.js",
   "scripts": {
-    "build": "tsc",
+    "dev": "tsc",
     "start": "electron ./dist/main.js"
-    
+  },
+  "build": {
+    "productName": "MyStatusBarApp",
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.png"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "@types/node": "^22.13.5",
-    "electron": "^34.2.0",
-    "typescript": "^5.7.3"
+    "@types/node": "^22.15.3",
+    "electron": "^36.0.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "^5.8.3"
   }
 }

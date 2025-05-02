@@ -25,7 +25,7 @@ export function goodFish(fish: fish, price: number, time: number){
     if(fish.price > 8){
         return "Wow!";
     }
-    if(price > fish.price * 7){
+    if(price > fish.price * 3.5){
         return "Good fish!";
     }
     if(time < 300){
@@ -41,8 +41,4 @@ export function calculateTime(t1: number, t2: number): number{
     else{
         return t2 - t1;
     }
-}
-
-export function rollADice(sevenWeight: number, sixWeight: number): number{
-    return 7;
 }
